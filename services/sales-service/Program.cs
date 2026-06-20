@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Pos.Sales.Api.Data;
 using Pos.Sales.Api.Services;
@@ -10,7 +11,8 @@ var connectionString = builder.Configuration.GetConnectionString("SalesDb")
 builder.Services.AddDbContext<SalesDbContext>(options =>
     options.UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure()));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "POS Sales API", Version = "v1" }));
