@@ -3,6 +3,12 @@ using Pos.Sales.Api.Domain;
 
 namespace Pos.Sales.Api.Dtos;
 
+/// <summary>A page of results plus the totals a client needs to render pager controls.</summary>
+public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int TotalCount)
+{
+    public int TotalPages => PageSize <= 0 ? 0 : (int)Math.Ceiling(TotalCount / (double)PageSize);
+}
+
 public record CreateSaleItemRequest(
     [Required] Guid ProductId,
     [Range(1, 1000)] int Quantity);

@@ -68,9 +68,13 @@ export class Pos implements OnInit {
 
   loadProducts(): void {
     this.loading.set(true);
-    this.catalog.getProducts(this.search() || undefined, this.selectedCategory() ?? undefined).subscribe({
-      next: (p) => {
-        this.products.set(p);
+    this.catalog.getProducts({
+      search: this.search() || undefined,
+      categoryId: this.selectedCategory() ?? undefined,
+      pageSize: 100
+    }).subscribe({
+      next: (result) => {
+        this.products.set(result.items);
         this.loading.set(false);
       },
       error: () => {

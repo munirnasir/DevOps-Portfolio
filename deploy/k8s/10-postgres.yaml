@@ -18,6 +18,7 @@ data:
   init-databases.sql: |
     CREATE DATABASE catalogdb;
     CREATE DATABASE salesdb;
+    CREATE DATABASE identitydb;
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

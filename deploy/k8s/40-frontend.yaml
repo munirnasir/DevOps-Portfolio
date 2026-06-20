@@ -28,6 +28,8 @@ spec:
               value: "catalog-service:8080"
             - name: SALES_HOST
               value: "sales-service:8080"
+            - name: IDENTITY_HOST
+              value: "identity-service:8080"
           resources:
             requests:
               cpu: 50m

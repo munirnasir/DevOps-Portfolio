@@ -1,6 +1,29 @@
 // Shared API contracts for the POS terminal. The fields mirror the DTOs returned by
 // the Catalog and Sales microservices.
 
+export interface PagedResult<T> {
+  items: T[];
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+}
+
+export type Role = 'Manager' | 'Cashier';
+
+export interface AuthUser {
+  id: string;
+  username: string;
+  displayName: string;
+  role: Role;
+}
+
+export interface LoginResponse {
+  token: string;
+  expiresAtUtc: string;
+  user: AuthUser;
+}
+
 export interface Product {
   id: string;
   sku: string;

@@ -65,6 +65,9 @@ jobs:
           - name: sales
             context: services/sales-service
             image: pos-sales
+          - name: identity
+            context: services/identity-service
+            image: pos-identity
           - name: frontend
             context: frontend
             image: pos-frontend

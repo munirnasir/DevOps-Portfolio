@@ -1,8 +1,8 @@
 # Cash & Carry POS — DevOps Portfolio
 
 A sample **point-of-sale** system built to demonstrate a full DevOps workflow: an
-Angular frontend, two **.NET 10** microservices, PostgreSQL (database-per-service),
-containerization, Kubernetes manifests, and a CI pipeline.
+Angular frontend, three **.NET 10** microservices, PostgreSQL (database-per-service),
+JWT authentication with roles, containerization, Kubernetes manifests, and a CI pipeline.
 
 ## Architecture
 
@@ -24,16 +24,27 @@ containerization, Kubernetes manifests, and a CI pipeline.
                     └───────────────────────────────────────────────────────┘
 ```
 
+- **Identity Service** issues JWTs and owns users + roles (**Manager**, **Cashier**).
+  Database: `identitydb`. Seeds two demo accounts on first run.
 - **Catalog Service** owns products, categories and **stock levels** (the single source
-  of truth for inventory). Database: `catalogdb`.
+  of truth for inventory). Write endpoints are Manager-only. Database: `catalogdb`.
 - **Sales Service** rings up transactions. At checkout it calls the Catalog over HTTP to
   validate products/prices and **decrement stock**, then persists the sale and receipt.
   Database: `salesdb`.
-- **Frontend** is a touch-friendly POS terminal. The nginx image also acts as the API
-  gateway, routing each resource path to the owning service (no CORS in production).
+- **Frontend** is a touch-friendly POS terminal plus a Manager-only product-management
+  screen. The nginx image also acts as the API gateway, routing each resource path to the
+  owning service (no CORS in production).
 
 Each service owns its own database and applies **EF Core migrations on startup**. The
 Catalog seeds a small demo catalogue on first run.
+
+### Authentication
+
+The Identity service signs JWTs with a symmetric key shared by all services. The Angular
+app stores the token, attaches it to API calls, and guards routes by role. Sales→Catalog
+stock writes are machine-to-machine, so Sales mints its own short-lived service token.
+
+**Demo logins:** `manager` / `manager123` (Manager) · `cashier` / `cashier123` (Cashier)
 
 ## Tech stack
 
@@ -59,6 +70,7 @@ docker compose -f deploy/docker-compose.yml up --build
 | http://localhost:8080              | POS terminal (frontend)      |
 | http://localhost:5001/swagger      | Catalog API (Swagger UI)     |
 | http://localhost:5002/swagger      | Sales API (Swagger UI)       |
+| http://localhost:5003/swagger      | Identity API (Swagger UI)    |
 
 ### Option B — Kubernetes
 

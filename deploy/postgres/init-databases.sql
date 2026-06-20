@@ -2,3 +2,4 @@
 -- Runs once, on first initialization of the Postgres data volume.
 CREATE DATABASE catalogdb;
 CREATE DATABASE salesdb;
+CREATE DATABASE identitydb;

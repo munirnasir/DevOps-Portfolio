@@ -4,8 +4,10 @@ kind: Kustomization
 namespace: pos
 resources:
   - 00-namespace.yaml
+  - 05-jwt-secret.yaml
   - 10-postgres.yaml
   - 20-catalog.yaml
   - 30-sales.yaml
+  - 35-identity.yaml
   - 40-frontend.yaml
   - 50-ingress.yaml

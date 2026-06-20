@@ -1,0 +1,29 @@
+<div class="login-wrap">
+  <form class="login-card" (ngSubmit)="submit()">
+    <h1>🛒 Cash &amp; Carry POS</h1>
+    <p class="sub">Sign in to continue</p>
+
+    @if (error()) {
+      <div class="alert">{{ error() }}</div>
+    }
+
+    <label>
+      Username
+      <input type="text" autocomplete="username" [ngModel]="username()" (ngModelChange)="username.set($event)" name="username" />
+    </label>
+    <label>
+      Password
+      <input type="password" autocomplete="current-password" [ngModel]="password()" (ngModelChange)="password.set($event)" name="password" />
+    </label>
+
+    <button type="submit" class="btn primary" [disabled]="loading()">
+      {{ loading() ? 'Signing in…' : 'Sign in' }}
+    </button>
+
+    <div class="hint">
+      <span>Demo accounts:</span>
+      <code>manager / manager123</code>
+      <code>cashier / cashier123</code>
+    </div>
+  </form>
+</div>

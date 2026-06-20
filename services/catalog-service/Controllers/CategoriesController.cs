@@ -1,13 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pos.Catalog.Api.Data;
 using Pos.Catalog.Api.Domain;
 using Pos.Catalog.Api.Dtos;
+using Pos.Catalog.Api.Security;
 
 namespace Pos.Catalog.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class CategoriesController : ControllerBase
 {
     private readonly CatalogDbContext _db;
@@ -27,6 +30,7 @@ public class CategoriesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = Roles.Manager)]
     public async Task<ActionResult<CategoryDto>> CreateCategory(CreateCategoryRequest request)
     {
         if (await _db.Categories.AnyAsync(c => c.Name == request.Name))
