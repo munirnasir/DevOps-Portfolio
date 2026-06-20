@@ -1,0 +1,13 @@
+/* Global styles for the POS terminal */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+
+button { font-family: inherit; }

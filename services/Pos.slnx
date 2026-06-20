@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/catalog-service/">
+    <Project Path="catalog-service/Pos.Catalog.Api.csproj" />
+  </Folder>
+  <Folder Name="/sales-service/">
+    <Project Path="sales-service/Pos.Sales.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Pos.Sales.Tests/Pos.Sales.Tests.csproj" />
+  </Folder>
+</Solution>

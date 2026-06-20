@@ -1,0 +1,21 @@
+.app-header {
+  height: 64px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.25rem;
+  background: #111827;
+  border-bottom: 1px solid #334155;
+  color: #e2e8f0;
+}
+
+.app-header .brand {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.app-header .tag {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}

@@ -1,0 +1,130 @@
+<div class="pos">
+  <!-- ============ Product catalogue ============ -->
+  <section class="catalogue">
+    <div class="toolbar">
+      <input
+        type="search"
+        class="search"
+        placeholder="Search products by name or SKU…"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+        (keyup.enter)="loadProducts()" />
+      <button class="btn" (click)="loadProducts()">Search</button>
+    </div>
+
+    <div class="categories">
+      <button class="chip" [class.active]="selectedCategory() === null" (click)="selectCategory(null)">All</button>
+      @for (cat of categories(); track cat.id) {
+        <button class="chip" [class.active]="selectedCategory() === cat.id" (click)="selectCategory(cat.id)">
+          {{ cat.name }}
+        </button>
+      }
+    </div>
+
+    @if (loading() && products().length === 0) {
+      <p class="muted">Loading products…</p>
+    }
+
+    <div class="grid">
+      @for (product of products(); track product.id) {
+        <button
+          class="card"
+          [class.out]="product.stockQuantity === 0"
+          [disabled]="product.stockQuantity === 0"
+          (click)="addToCart(product)">
+          <span class="name">{{ product.name }}</span>
+          <span class="sku">{{ product.sku }}</span>
+          <span class="price">{{ product.unitPrice | number: '1.2-2' }}</span>
+          <span class="stock">{{ product.stockQuantity }} in stock</span>
+        </button>
+      } @empty {
+        <p class="muted">No products match your search.</p>
+      }
+    </div>
+  </section>
+
+  <!-- ============ Cart / checkout ============ -->
+  <aside class="cart">
+    <h2>Current Sale</h2>
+
+    @if (error()) {
+      <div class="alert">{{ error() }}</div>
+    }
+
+    <div class="lines">
+      @for (line of cart(); track line.product.id) {
+        <div class="line">
+          <div class="line-main">
+            <span class="line-name">{{ line.product.name }}</span>
+            <span class="line-price">{{ line.product.unitPrice * line.quantity | number: '1.2-2' }}</span>
+          </div>
+          <div class="line-controls">
+            <button class="qty" (click)="changeQuantity(line, -1)">−</button>
+            <span class="qty-value">{{ line.quantity }}</span>
+            <button class="qty" (click)="changeQuantity(line, 1)">+</button>
+            <button class="remove" (click)="removeLine(line)">Remove</button>
+          </div>
+        </div>
+      } @empty {
+        <p class="muted">Tap a product to add it to the sale.</p>
+      }
+    </div>
+
+    <div class="totals">
+      <div class="row"><span>Subtotal</span><span>{{ subtotal() | number: '1.2-2' }}</span></div>
+      <div class="row"><span>Tax</span><span>{{ taxTotal() | number: '1.2-2' }}</span></div>
+      <div class="row grand"><span>Total</span><span>{{ grandTotal() | number: '1.2-2' }}</span></div>
+    </div>
+
+    <div class="payment">
+      <label>
+        Cashier
+        <input type="text" [ngModel]="cashierName()" (ngModelChange)="cashierName.set($event)" placeholder="optional" />
+      </label>
+
+      <div class="methods">
+        <button class="chip" [class.active]="paymentMethod() === 'Cash'" (click)="paymentMethod.set('Cash')">Cash</button>
+        <button class="chip" [class.active]="paymentMethod() === 'Card'" (click)="paymentMethod.set('Card')">Card</button>
+      </div>
+
+      @if (paymentMethod() === 'Cash') {
+        <label>
+          Amount tendered
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            [ngModel]="amountTendered()"
+            (ngModelChange)="amountTendered.set($event)"
+            placeholder="0.00" />
+        </label>
+        <div class="row change"><span>Change due</span><span>{{ changeDue() | number: '1.2-2' }}</span></div>
+      }
+    </div>
+
+    <div class="actions">
+      <button class="btn ghost" (click)="clearCart()" [disabled]="cart().length === 0">Clear</button>
+      <button class="btn primary" (click)="checkout()" [disabled]="!canCheckout()">
+        {{ loading() ? 'Processing…' : 'Charge ' + (grandTotal() | number: '1.2-2') }}
+      </button>
+    </div>
+  </aside>
+
+  <!-- ============ Receipt overlay ============ -->
+  @if (lastSale(); as sale) {
+    <div class="overlay" (click)="dismissReceipt()">
+      <div class="receipt" (click)="$event.stopPropagation()">
+        <h3>Sale #{{ sale.number }} complete</h3>
+        <div class="row"><span>Total</span><span>{{ sale.grandTotal | number: '1.2-2' }}</span></div>
+        <div class="row"><span>{{ sale.paymentMethod }} tendered</span><span>{{ sale.amountTendered | number: '1.2-2' }}</span></div>
+        <div class="row grand"><span>Change</span><span>{{ sale.changeDue | number: '1.2-2' }}</span></div>
+        <ul>
+          @for (item of sale.items; track item.productId) {
+            <li>{{ item.quantity }} × {{ item.name }} — {{ item.lineTotal | number: '1.2-2' }}</li>
+          }
+        </ul>
+        <button class="btn primary" (click)="dismissReceipt()">New Sale</button>
+      </div>
+    </div>
+  }
+</div>

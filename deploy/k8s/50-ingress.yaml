@@ -1,0 +1,43 @@
+# Path-based API gateway at the cluster edge: each resource path is routed to the
+# microservice that owns it, and everything else falls through to the Angular app.
+# Requires an ingress controller (e.g. ingress-nginx). Add "127.0.0.1 pos.local"
+# to your hosts file, or browse the controller's external IP with Host: pos.local.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pos-ingress
+  namespace: pos
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: pos.local
+      http:
+        paths:
+          - path: /api/products
+            pathType: Prefix
+            backend:
+              service:
+                name: catalog-service
+                port:
+                  number: 8080
+          - path: /api/categories
+            pathType: Prefix
+            backend:
+              service:
+                name: catalog-service
+                port:
+                  number: 8080
+          - path: /api/sales
+            pathType: Prefix
+            backend:
+              service:
+                name: sales-service
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

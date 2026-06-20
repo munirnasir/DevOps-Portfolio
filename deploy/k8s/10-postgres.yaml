@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-credentials
+  namespace: pos
+type: Opaque
+stringData:
+  POSTGRES_USER: pos
+  POSTGRES_PASSWORD: pos
+  POSTGRES_DB: pos
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init
+  namespace: pos
+data:
+  init-databases.sql: |
+    CREATE DATABASE catalogdb;
+    CREATE DATABASE salesdb;
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: pos
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: pos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: init
+              mountPath: /docker-entrypoint-initdb.d
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "pos"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "pos"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: postgres-data
+        - name: init
+          configMap:
+            name: postgres-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: pos
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
