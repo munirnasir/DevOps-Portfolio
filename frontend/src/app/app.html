@@ -1,6 +1,24 @@
 <header class="app-header">
   <span class="brand">🛒 Cash &amp; Carry POS</span>
-  <span class="tag">DevOps Portfolio · Angular + .NET 10 microservices</span>
+
+  @if (auth.isAuthenticated()) {
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">POS</a>
+      @if (auth.hasRole('Manager')) {
+        <a routerLink="/admin/products" routerLinkActive="active">Products</a>
+      }
+    </nav>
+
+    <span class="spacer"></span>
+
+    <span class="user">
+      {{ auth.user()?.displayName }}
+      <span class="role">{{ auth.user()?.role }}</span>
+    </span>
+    <button class="logout" (click)="logout()">Sign out</button>
+  } @else {
+    <span class="tag">DevOps Portfolio · Angular + .NET 10 microservices</span>
+  }
 </header>
 
 <router-outlet />

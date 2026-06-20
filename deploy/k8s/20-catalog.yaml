@@ -31,6 +31,21 @@ spec:
                   key: POSTGRES_PASSWORD
             - name: ConnectionStrings__CatalogDb
               value: "Host=postgres;Port=5432;Database=catalogdb;Username=pos;Password=$(POSTGRES_PASSWORD)"
+            - name: Jwt__Key
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: key
+            - name: Jwt__Issuer
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: issuer
+            - name: Jwt__Audience
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: audience
           resources:
             requests:
               cpu: 100m

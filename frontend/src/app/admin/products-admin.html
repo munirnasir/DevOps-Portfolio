@@ -1,0 +1,126 @@
+<div class="admin">
+  <div class="header">
+    <h2>Product Management</h2>
+    <button class="btn primary" (click)="newProduct()">+ New product</button>
+  </div>
+
+  <div class="toolbar">
+    <input
+      type="search"
+      placeholder="Search name or SKU…"
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      (keyup.enter)="runSearch()" />
+    <button class="btn" (click)="runSearch()">Search</button>
+    <label class="inactive">
+      <input type="checkbox" [ngModel]="includeInactive()" (ngModelChange)="includeInactive.set($event); runSearch()" />
+      Show inactive
+    </label>
+  </div>
+
+  @if (error()) {
+    <div class="alert">{{ error() }}</div>
+  }
+
+  <table class="grid">
+    <thead>
+      <tr>
+        <th>SKU</th><th>Name</th><th>Category</th><th class="num">Price</th>
+        <th class="num">Tax</th><th class="num">Stock</th><th>Status</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of products(); track p.id) {
+        <tr [class.inactive]="!p.isActive">
+          <td class="mono">{{ p.sku }}</td>
+          <td>{{ p.name }}</td>
+          <td>{{ p.categoryName }}</td>
+          <td class="num">{{ p.unitPrice | number: '1.2-2' }}</td>
+          <td class="num">{{ (p.taxRate * 100) | number: '1.0-0' }}%</td>
+          <td class="num">{{ p.stockQuantity }}</td>
+          <td>
+            <span class="badge" [class.on]="p.isActive">{{ p.isActive ? 'Active' : 'Inactive' }}</span>
+          </td>
+          <td class="actions">
+            <button class="link" (click)="edit(p)">Edit</button>
+            <span class="stock-adjust">
+              <input
+                type="number"
+                placeholder="±qty"
+                [ngModel]="stockDelta()[p.id]"
+                (ngModelChange)="setStockDelta(p.id, $event)" />
+              <button class="link" (click)="applyStock(p)">Apply</button>
+            </span>
+            @if (p.isActive) {
+              <button class="link danger" (click)="deactivate(p)">Deactivate</button>
+            }
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="8" class="muted">No products found.</td></tr>
+      }
+    </tbody>
+  </table>
+
+  <div class="pager">
+    <button class="btn" [disabled]="page() <= 1" (click)="goToPage(page() - 1)">‹ Prev</button>
+    <span>Page {{ page() }} of {{ totalPages() || 1 }} · {{ totalCount() }} items</span>
+    <button class="btn" [disabled]="page() >= totalPages()" (click)="goToPage(page() + 1)">Next ›</button>
+  </div>
+
+  <!-- ===== Create / edit panel ===== -->
+  @if (draft(); as d) {
+    <div class="overlay" (click)="cancelEdit()">
+      <div class="panel" (click)="$event.stopPropagation()">
+        <h3>{{ isNew() ? 'New product' : 'Edit product' }}</h3>
+
+        @if (isNew()) {
+          <label>SKU
+            <input type="text" [ngModel]="d.sku" (ngModelChange)="patchDraft({ sku: $event })" />
+          </label>
+          <label>Barcode
+            <input type="text" [ngModel]="d.barcode" (ngModelChange)="patchDraft({ barcode: $event })" />
+          </label>
+        }
+
+        <label>Name
+          <input type="text" [ngModel]="d.name" (ngModelChange)="patchDraft({ name: $event })" />
+        </label>
+        <label>Description
+          <input type="text" [ngModel]="d.description" (ngModelChange)="patchDraft({ description: $event })" />
+        </label>
+        <label>Category
+          <select [ngModel]="d.categoryId" (ngModelChange)="patchDraft({ categoryId: +$event })">
+            @for (c of categories(); track c.id) {
+              <option [value]="c.id">{{ c.name }}</option>
+            }
+          </select>
+        </label>
+        <div class="row2">
+          <label>Unit price
+            <input type="number" step="0.01" min="0" [ngModel]="d.unitPrice" (ngModelChange)="patchDraft({ unitPrice: +$event })" />
+          </label>
+          <label>Tax rate (0–1)
+            <input type="number" step="0.01" min="0" max="1" [ngModel]="d.taxRate" (ngModelChange)="patchDraft({ taxRate: +$event })" />
+          </label>
+        </div>
+
+        @if (isNew()) {
+          <label>Initial stock
+            <input type="number" min="0" [ngModel]="d.stockQuantity" (ngModelChange)="patchDraft({ stockQuantity: +$event })" />
+          </label>
+        } @else {
+          <label class="checkbox">
+            <input type="checkbox" [ngModel]="d.isActive" (ngModelChange)="patchDraft({ isActive: $event })" />
+            Active
+          </label>
+        }
+
+        <div class="panel-actions">
+          <button class="btn ghost" (click)="cancelEdit()">Cancel</button>
+          <button class="btn primary" (click)="save()" [disabled]="loading()">Save</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

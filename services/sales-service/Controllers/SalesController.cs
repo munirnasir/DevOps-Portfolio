@@ -1,15 +1,18 @@
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Pos.Sales.Api.Data;
 using Pos.Sales.Api.Domain;
 using Pos.Sales.Api.Dtos;
+using Pos.Sales.Api.Security;
 using Pos.Sales.Api.Services;
 
 namespace Pos.Sales.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class SalesController : ControllerBase
 {
     private readonly SalesDbContext _db;
@@ -24,16 +27,24 @@ public class SalesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<SaleDto>>> GetSales([FromQuery] int take = 50)
+    public async Task<ActionResult<PagedResult<SaleDto>>> GetSales(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
     {
-        var sales = await _db.Sales
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var baseQuery = _db.Sales.AsNoTracking();
+        var totalCount = await baseQuery.CountAsync();
+
+        var sales = await baseQuery
             .Include(s => s.Items)
-            .AsNoTracking()
             .OrderByDescending(s => s.CreatedAtUtc)
-            .Take(Math.Clamp(take, 1, 200))
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        return Ok(sales.Select(ToDto));
+        return Ok(new PagedResult<SaleDto>(sales.Select(ToDto).ToList(), page, pageSize, totalCount));
     }
 
     [HttpGet("{id:guid}")]

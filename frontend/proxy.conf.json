@@ -1,4 +1,5 @@
 {
+  "/api/auth": { "target": "http://localhost:5003", "secure": false, "changeOrigin": true },
   "/api/products": { "target": "http://localhost:5001", "secure": false, "changeOrigin": true },
   "/api/categories": { "target": "http://localhost:5001", "secure": false, "changeOrigin": true },
   "/api/sales": { "target": "http://localhost:5002", "secure": false, "changeOrigin": true }

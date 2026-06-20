@@ -8,6 +8,14 @@
 
 name: pos
 
+# Shared JWT signing settings. All services must agree on Key/Issuer/Audience so the
+# tokens minted by the Identity service validate everywhere. Override the key in any
+# real deployment (it is a demo secret here).
+x-jwt-env: &jwt-env
+  Jwt__Key: "dev-only-super-secret-signing-key-change-me-please-32+chars"
+  Jwt__Issuer: "pos-identity"
+  Jwt__Audience: "pos-services"
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -31,6 +39,7 @@ services:
       context: ../services/catalog-service
     image: pos-catalog:local
     environment:
+      <<: *jwt-env
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__CatalogDb: "Host=postgres;Port=5432;Database=catalogdb;Username=pos;Password=pos"
     ports:
@@ -44,6 +53,7 @@ services:
       context: ../services/sales-service
     image: pos-sales:local
     environment:
+      <<: *jwt-env
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__SalesDb: "Host=postgres;Port=5432;Database=salesdb;Username=pos;Password=pos"
       Services__CatalogBaseUrl: "http://catalog-service:8080"
@@ -55,6 +65,20 @@ services:
       catalog-service:
         condition: service_started
 
+  identity-service:
+    build:
+      context: ../services/identity-service
+    image: pos-identity:local
+    environment:
+      <<: *jwt-env
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__IdentityDb: "Host=postgres;Port=5432;Database=identitydb;Username=pos;Password=pos"
+    ports:
+      - "5003:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   frontend:
     build:
       context: ../frontend
@@ -62,11 +86,13 @@ services:
     environment:
       CATALOG_HOST: "catalog-service:8080"
       SALES_HOST: "sales-service:8080"
+      IDENTITY_HOST: "identity-service:8080"
     ports:
       - "8080:80"
     depends_on:
       - catalog-service
       - sales-service
+      - identity-service
 
 volumes:
   pgdata:

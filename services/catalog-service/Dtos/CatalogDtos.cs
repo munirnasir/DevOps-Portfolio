@@ -2,6 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Pos.Catalog.Api.Dtos;
 
+/// <summary>A page of results plus the totals a client needs to render pager controls.</summary>
+public record PagedResult<T>(IReadOnlyList<T> Items, int Page, int PageSize, int TotalCount)
+{
+    public int TotalPages => PageSize <= 0 ? 0 : (int)Math.Ceiling(TotalCount / (double)PageSize);
+}
+
 public record ProductDto(
     Guid Id,
     string Sku,

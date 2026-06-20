@@ -2,10 +2,15 @@
   <Folder Name="/catalog-service/">
     <Project Path="catalog-service/Pos.Catalog.Api.csproj" />
   </Folder>
+  <Folder Name="/identity-service/">
+    <Project Path="identity-service/Pos.Identity.Api.csproj" />
+  </Folder>
   <Folder Name="/sales-service/">
     <Project Path="sales-service/Pos.Sales.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Pos.Catalog.IntegrationTests/Pos.Catalog.IntegrationTests.csproj" />
+    <Project Path="tests/Pos.Sales.IntegrationTests/Pos.Sales.IntegrationTests.csproj" />
     <Project Path="tests/Pos.Sales.Tests/Pos.Sales.Tests.csproj" />
   </Folder>
 </Solution>

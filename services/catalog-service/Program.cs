@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.OpenApi.Models;
 using Pos.Catalog.Api.Data;
+using Pos.Catalog.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,10 +11,26 @@ var connectionString = builder.Configuration.GetConnectionString("CatalogDb")
 builder.Services.AddDbContext<CatalogDbContext>(options =>
     options.UseNpgsql(connectionString, npgsql => npgsql.EnableRetryOnFailure()));
 
+builder.Services.AddPosJwtAuthentication(builder.Configuration);
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
-    c.SwaggerDoc("v1", new() { Title = "POS Catalog API", Version = "v1" }));
+{
+    c.SwaggerDoc("v1", new() { Title = "POS Catalog API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        Description = "Paste the JWT returned by the Identity service /api/auth/login."
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }] = Array.Empty<string>()
+    });
+});
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<CatalogDbContext>("catalog-db", tags: ["ready"]);
@@ -31,6 +48,8 @@ app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "POS Catalog API v1"));
 
 app.UseCors(FrontendCors);
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

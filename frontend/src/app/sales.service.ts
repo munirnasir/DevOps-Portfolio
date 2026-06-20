@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CreateSale, Sale } from './models';
+import { CreateSale, PagedResult, Sale } from './models';
 
 @Injectable({ providedIn: 'root' })
 export class SalesService {
@@ -11,8 +11,10 @@ export class SalesService {
     return this.http.post<Sale>('/api/sales', sale);
   }
 
-  getRecentSales(): Observable<Sale[]> {
-    return this.http.get<Sale[]>('/api/sales');
+  getRecentSales(page = 1, pageSize = 20): Observable<PagedResult<Sale>> {
+    return this.http.get<PagedResult<Sale>>('/api/sales', {
+      params: { page: String(page), pageSize: String(pageSize) }
+    });
   }
 
   getReceipt(saleId: string): Observable<string> {
