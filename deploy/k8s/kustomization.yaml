@@ -1,0 +1,11 @@
+# Apply the whole stack with:  kubectl apply -k deploy/k8s
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: pos
+resources:
+  - 00-namespace.yaml
+  - 10-postgres.yaml
+  - 20-catalog.yaml
+  - 30-sales.yaml
+  - 40-frontend.yaml
+  - 50-ingress.yaml
