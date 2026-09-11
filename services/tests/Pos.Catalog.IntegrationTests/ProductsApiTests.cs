@@ -40,8 +40,11 @@ public class ProductsApiTests : IClassFixture<CatalogApiFactory>
         var page = await ClientFor(Roles.Cashier).GetFromJsonAsync<PagedProducts>("/api/products?pageSize=100");
 
         Assert.NotNull(page);
-        Assert.Equal(10, page!.TotalCount);
-        Assert.Equal(10, page.Items.Count);
+        // >= 10 rather than == 10: other tests in this class share the database and may
+        // have inserted products, so assert on the seeded data being present instead.
+        Assert.True(page!.TotalCount >= 10, $"expected at least 10 seeded products, got {page.TotalCount}");
+        Assert.Contains(page.Items, p => p.Sku == "BEV-001");
+        Assert.Equal(page.TotalCount, page.Items.Count); // pageSize=100 fits everything on one page
     }
 
     [Fact]
@@ -52,7 +55,7 @@ public class ProductsApiTests : IClassFixture<CatalogApiFactory>
         Assert.NotNull(page);
         Assert.Equal(3, page!.Items.Count);
         Assert.Equal(3, page.PageSize);
-        Assert.Equal(10, page.TotalCount);
+        Assert.True(page.TotalCount >= 10); // shared DB may hold products inserted by other tests
     }
 
     [Fact]
