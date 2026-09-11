@@ -1,0 +1,59 @@
+name: catalog-service
+
+# Runs only when the Catalog service (or its tests) change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/catalog-service/**'
+      - 'services/tests/Pos.Catalog.IntegrationTests/**'
+      - '.github/workflows/catalog-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'services/catalog-service/**'
+      - 'services/tests/Pos.Catalog.IntegrationTests/**'
+      - '.github/workflows/catalog-service.yml'
+
+concurrency:
+  group: catalog-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: dotnet build services/catalog-service/Pos.Catalog.Api.csproj -c Release
+
+      # Testcontainers spins up a real Postgres; Docker is available on the runner.
+      - name: Integration tests
+        run: dotnet test services/tests/Pos.Catalog.IntegrationTests -c Release
+
+  image:
+    name: Docker image
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Build only. To push, add a registry login step, set push: true, and tag with
+      # the registry (e.g. ghcr.io/${{ github.repository_owner }}/pos-catalog).
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: services/catalog-service
+          push: false
+          tags: pos-catalog:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

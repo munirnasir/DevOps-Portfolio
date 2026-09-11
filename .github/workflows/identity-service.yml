@@ -1,0 +1,51 @@
+name: identity-service
+
+# Runs only when the Identity service changes.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'services/identity-service/**'
+      - '.github/workflows/identity-service.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'services/identity-service/**'
+      - '.github/workflows/identity-service.yml'
+
+concurrency:
+  group: identity-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: dotnet build services/identity-service/Pos.Identity.Api.csproj -c Release
+
+  image:
+    name: Docker image
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: services/identity-service
+          push: false
+          tags: pos-identity:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

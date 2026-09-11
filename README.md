@@ -55,7 +55,7 @@ stock writes are machine-to-machine, so Sales mints its own short-lived service 
 | Database     | PostgreSQL 16 (one database per service)                |
 | Container    | Docker (multi-stage builds), Docker Compose             |
 | Orchestration| Kubernetes (Deployments, Services, Ingress, probes)     |
-| CI           | GitHub Actions (build + test + image build)             |
+| CI           | GitHub Actions — a separate path-filtered pipeline per service |
 
 ## Run it locally
 
